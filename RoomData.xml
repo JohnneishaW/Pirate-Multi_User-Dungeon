@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<rooms>
+	<room name="The Galley" id="0">
+		<description> This is the kitchen of the ship.</description>
+		<item name="barrel of rum">This barrel gives pirates life. Yasss</item>
+		<item name="knife">Use this item to cut something or someone</item>
+		<exits>-1, 1, -1, -1, -1,-1</exits>
+	</room>
+	<room name="The Deck" id="1">
+		<description> Hang out with your pirate pals on the deck.</description>
+		<item name="chair">This is a place to sit.</item>
+		<item name="telescope">This can be used to spy on your other pirates.</item>
+		<exits> 0 ,-1, -1, -1, -1, -1</exits>
+	</room>
+	<room name="Captain's quarters" id="3">
+		<description> Hang out with your pirate pals on the deck.</description>
+		<item name="comb">This is a comb.</item>
+		<item name="pepper spray">This is a can of pepper spray.</item>
+		<exits> -1 , -1, 2, -1, -1, -1</exits>
+	</room>
+</rooms>
