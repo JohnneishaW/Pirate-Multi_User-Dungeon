@@ -16,7 +16,7 @@ class Player(private var currentRoom: Room, val inv:List[Item]) {
           
         inv.filterNot(_==cmd(1))
     }
-    if(command.toLowerCase == "exit") //TODO: exit
+    if(command.toLowerCase == "exit") "exit"
     if (command.toLowerCase == "help") println(
       "look - reprints the description of the current room \n" +
       "inv/inventory - list the contents of your inventory \n" +
@@ -36,11 +36,19 @@ class Player(private var currentRoom: Room, val inv:List[Item]) {
     item::inv
   }
   def inventoryListing(): String = {
-    inv.foreach(i => println(i))
+    inv.mkString(" ,")
   }
   def move(dir: String): Unit = {
-    val ex = currentRoom.getExits()
-    if(ex==dir) currentRoom == Room.rooms(
+    //want to change rooms using array[int]
+    dir match{
+      case "north" => currentRoom()
+      case "south" => currentRoom()
+      case "east" => 
+      case "west" => 
+      case "up" =>
+      case "down" =>
+    }
+    if(ex==dir) currentRoom == Room.rooms()
   }
 
 }

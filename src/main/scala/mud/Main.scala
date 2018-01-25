@@ -8,6 +8,8 @@ object Main {
 		
 		val input = readLine
 		while(input != "exit"){
-	    val player = new Player(new Room)
+		  val r = new Room
+		  val i = new Item
+	    val player = new Player(r, i)
 	}
 }
