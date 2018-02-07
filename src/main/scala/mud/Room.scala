@@ -1,5 +1,6 @@
 package mud
 
+//change exits from ints to strings
 class Room(private val name:String, private val desc:String, exits:Array[Int], private var _items: List[Item]){
   def items = _items 
   
@@ -21,6 +22,7 @@ class Room(private val name:String, private val desc:String, exits:Array[Int], p
 object Room {
   val rooms = readRooms()
 
+  //change to Map[String,Room]
   def readRooms(): Array[Room] = {
     val xmlData = xml.XML.loadFile("RoomData.xml")
     (xmlData \ "room").map(n => {
@@ -32,5 +34,6 @@ object Room {
       val id = (n \ "@id").text
       new Room(name, desc, exits, items)
     }).toArray
+    //change to map
 }
 }

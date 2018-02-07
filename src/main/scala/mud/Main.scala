@@ -5,11 +5,12 @@ import scala.io.StdIn._
 object Main {
 	def main(args: Array[String]): Unit = {
 		println("Welcome to my MUD.")
+		val startingInv:List[Item]=Nil
+	  val player = new Player(0, startingInv)
 		
-		val input = readLine
+		val input = readLine.toLowerCase
 		while(input != "exit"){
-		  val r = new Room
-		  val i = new Item
-	    val player = new Player(r, i)
+		  player.processCommand(input)
 	}
+}
 }
