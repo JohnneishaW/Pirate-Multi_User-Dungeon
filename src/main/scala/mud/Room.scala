@@ -5,16 +5,24 @@ class Room(private val name:String, private val desc:String, exits:Array[Int], p
   def items = _items 
   
   def description(): String = {
-    name + "\n" + desc + "\n" + items + "\n" + exits.map(_.toString)
-  }
+    val exitNames = exits.toList.zip(List("north","south","east","west","up", "down"))
+    name + "\n" + desc + "\n" +"Items: " + items.map(_.name).mkString(", ") +"\n" + "Exits: " + exitNames.filter(_._1!=(-1)).map(_._2).mkString(", ")
+    
+   }
   def getExit(dir: Int): Option[Int] = {
-    exits.find(_==dir)
+    exits(dir)match{
+      case -1 => None
+      case x => Some(x)
+    }
   }
   def getItem(itemName: String): Option[Item] = {
-    items.find(_==itemName.toLowerCase)
+   items.filterNot(_.name==itemName.toLowerCase)
+   val itemFound = items.find(_.name==itemName.toLowerCase)
+   _items = _items.filterNot(_.name==itemName.toLowerCase)
+   itemFound
   }
   def dropItem(item: Item): Unit = {
-    item::items
+    _items = item::_items
    }
 }
 
@@ -28,9 +36,9 @@ object Room {
     (xmlData \ "room").map(n => {
       val name = (n \ "@name").text
       val desc = (n \ "description").text
-      val exits = (n \ "exits").text.split(",").map(_.toInt)
+      val exits = (n \ "exits").text.split(",").map(_.trim.toInt)
       val items = (n \ "item").map(in =>
-        Item((in \ "name").text, in.text)).toList
+        Item((in \ "@name").text, in.text)).toList
       val id = (n \ "@id").text
       new Room(name, desc, exits, items)
     }).toArray

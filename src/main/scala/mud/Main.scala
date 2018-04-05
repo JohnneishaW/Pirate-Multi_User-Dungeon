@@ -8,9 +8,10 @@ object Main {
 		val startingInv:List[Item]=Nil
 	  val player = new Player(0, startingInv)
 		
-		val input = readLine.toLowerCase
+		var input = readLine.toLowerCase
 		while(input != "exit"){
 		  player.processCommand(input)
+		  input=readLine.toLowerCase
 	}
 }
 }
