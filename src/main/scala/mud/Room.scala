@@ -31,7 +31,7 @@ object Room {
   val rooms = readRooms()
 
   //change to Map[String,Room]
-  def readRooms(): Array[Room] = {
+  def readRooms()= {
     val xmlData = xml.XML.loadFile("RoomData.xml")
     (xmlData \ "room").map(n => {
       val name = (n \ "@name").text
@@ -40,8 +40,8 @@ object Room {
       val items = (n \ "item").map(in =>
         Item((in \ "@name").text, in.text)).toList
       val id = (n \ "@id").text
-      new Room(name, desc, exits, items)
+      val keyword = (n \ "keyword").text
+      (new Room(name, desc, exits, items))
     }).toArray
-    //change to map
-}
+  }
 }

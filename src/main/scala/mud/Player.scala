@@ -11,14 +11,18 @@ class Player(private var currentRoom: Int, private var inv: List[Item]) {
       Room.rooms(currentRoom).getItem(cmd(1)) match {
         case Some(x) => {
           addToInventory(x)
-          println("I added the item to my inventory.")
+          println("You added the item to your inventory.")
         }
         case None =>
       }
     }
     if ((cmd(0).toLowerCase).contains("drop")) {
        getFromInventory(cmd(1)) match {
-        case Some(x) => Room.rooms(currentRoom).dropItem(x)
+        case Some(x) => {
+          val di = Room.rooms(currentRoom).dropItem(x)
+          inv=inv.filterNot(_==x)
+          di
+        }
         case None =>
       }
     }
@@ -30,7 +34,7 @@ class Player(private var currentRoom: Int, private var inv: List[Item]) {
     if (command.toLowerCase == "exit") "exit"
     if (command.toLowerCase == "help") println(
       "look - reprints the description of the current room \n" +
-        "inv/inventory - list the contents of your inventory \n" +
+        "inv - list the contents of your inventory \n" +
         "get item - to get an item from the room and add it to your inventory\n" +
         "drop item - to drop an item from your inventory into the room.\n" +
         "exit - leave the game\n" +
@@ -40,11 +44,6 @@ class Player(private var currentRoom: Int, private var inv: List[Item]) {
   def getFromInventory(itemName: String): Option[Item] = {
     println("it's lit")
     inv.find(_.name == itemName.toLowerCase)
-
-    /*match {
-      case Some(x) => Option(x)
-     case None => 
-   }*/
   }
 
   def addToInventory(item: Item): Unit = {

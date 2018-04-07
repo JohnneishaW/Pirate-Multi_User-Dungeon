@@ -3,7 +3,7 @@
 <rooms>
 	<room name="The Galley" key="thegalley">
 		<description>This is the kitchen of the ship. It is located on the east side of the ship.</description>
-		<item name="barrel of rum">This barrel gives pirates life. Yasss</item>
+		<item name="rum">This barrel gives pirates life. Yasss</item>
 		<item name="knife">Use this item to cut something or someone</item>
 		<exits>-1,1,-1,-1,4,5</exits>
 	</room>
@@ -16,7 +16,7 @@
 	<room name="Captain's quarters" key="captain'squarters">
 		<description> Hang out with your pirate pals on the deck.</description>
 		<item name="comb">This is a comb.</item>
-		<item name="pepper spray">This is a can of pepper spray.</item>
+		<item name="can">This is a can of pepper spray.</item>
 		<exits>-1,1,-1,3,4,5</exits>
 	</room>
 	<room name="west" key="westroom">
