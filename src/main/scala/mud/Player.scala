@@ -1,12 +1,12 @@
 package mud
 
-class Player(private var currentRoom: Int, private var inv: List[Item]) {
+class Player(private var currentRoom: String, private var inv: List[Item]) {
   def processCommand(command: String): Unit = {
     val cmd = command.split(" ")
     
     
     if (cmd(0).toLowerCase == "look") println(Room.rooms(currentRoom).description())
-    if (cmd(0).toLowerCase == "inv") println("Inventory:\n" + inv.map(_.name).mkString + " - " + inv.map(_.desc).mkString)
+    if (cmd(0).toLowerCase == "inv") println("Inventory:\n" + inv.map(i=> (i.name + " - " + i.desc + "\n")).mkString )
     if ((cmd(0).toLowerCase).contains("get")) {
       Room.rooms(currentRoom).getItem(cmd(1)) match {
         case Some(x) => {
@@ -53,7 +53,6 @@ class Player(private var currentRoom: Int, private var inv: List[Item]) {
     inv.mkString(" ,")
   }
   def move(dir: String): Unit = {
-    //want to change rooms using array[int]
     val direct = dir match {
       case "north" => 0
       case "south" => 1

@@ -6,7 +6,7 @@ object Main {
 	def main(args: Array[String]): Unit = {
 		println("Welcome to my MUD.")
 		val startingInv:List[Item]=Nil
-	  val player = new Player(0, startingInv)
+	  val player = new Player("gal", startingInv)
 		
 		var input = readLine.toLowerCase
 		while(input != "exit"){

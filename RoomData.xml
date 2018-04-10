@@ -1,40 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <rooms>
-	<room name="The Galley" key="thegalley">
+	<room name="The Galley" key="gal">
 		<description>This is the kitchen of the ship. It is located on the east side of the ship.</description>
 		<item name="rum">This barrel gives pirates life. Yasss</item>
 		<item name="knife">Use this item to cut something or someone</item>
-		<exits>-1,1,-1,-1,4,5</exits>
+		<exits>,deck,,,attic,bm</exits>
 	</room>
-	<room name="The Deck" key="thedeck">
+	<room name="The Deck" key="deck">
 		<description>Hang out with your pirate pals on the deck.</description>
 		<item name="chair">This is a place to sit.</item>
 		<item name="telescope">This can be used to spy on your other pirates.</item>
-		<exits>0,-1,2,-1,4,5</exits>
+		<exits>gal,,cq,,attic,bm</exits>
 	</room>
-	<room name="Captain's quarters" key="captain'squarters">
+	<room name="Captain's quarters" key="cq">
 		<description> Hang out with your pirate pals on the deck.</description>
 		<item name="comb">This is a comb.</item>
 		<item name="can">This is a can of pepper spray.</item>
-		<exits>-1,1,-1,3,4,5</exits>
+		<exits> ,deck,,west,attic,basement</exits>
 	</room>
-	<room name="west" key="westroom">
+	<room name="west" key="west">
 		<description>WEST DESCRIPTION</description>
 		<item name="item1">description1</item>
 		<item name="items1">description1</item>
-		<exits>-1,1,2,-1,4,5</exits>
+		<exits> ,deck,cq,,attic,basement</exits>
 	</room>
 	<room name="attic" key="attic">
 		<description>ATTIC DESCRIPTION</description>
 		<item name="item1">description1</item>
 		<item name="items1">description1</item>
-		<exits>0,1,2,3,-1,5</exits>
+		<exits>gal,deck,cq,west,,bm</exits>
 	</room>
-	<room name="basement" key="basement">
+	<room name="basement" key="bm">
 		<description>BASEMENT DESCRIPTION</description>
 		<item name="item1">description1</item>
 		<item name="items1">description1</item>
-		<exits>0,1,2,3,4,-1</exits>
+		<exits>gal,deck,cq,west,attic,</exits>
 	</room>
 </rooms>
