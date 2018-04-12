@@ -1,38 +1,69 @@
 package mud
 
-class Player(private var currentRoom: String, private var inv: List[Item]) {
-  def processCommand(command: String): Unit = {
-    val cmd = command.split(" ")
-    
-    
-    if (cmd(0).toLowerCase == "look") println(Room.rooms(currentRoom).description())
-    if (cmd(0).toLowerCase == "inv") println("Inventory:\n" + inv.map(i=> (i.name + " - " + i.desc + "\n")).mkString )
-    if ((cmd(0).toLowerCase).contains("get")) {
-      Room.rooms(currentRoom).getItem(cmd(1)) match {
+import akka.actor.Actor
+import java.io.PrintStream
+import java.io.BufferedReader
+import java.net.Socket
+import akka.actor.ActorRef
+
+class Player(private var inv: List[Item], name: String, sock: Socket, in: BufferedReader, out: PrintStream) extends Actor {
+  private var currentRoom: ActorRef = null
+
+  import Player._
+  def receive = {
+    case ProcessInput =>
+      if (in.ready()) {
+        val input = in.readLine()
+        processCommand(input)
+      }
+    case TakeExit(newRoom) =>
+      newRoom match {
+        case Some(nextRoom) =>
+          currentRoom = nextRoom
+          currentRoom ! Room.PrintDescription
+
+        case None => out.println("Error. Go away")
+      }
+
+    case AddToInventory(oitem) =>
+      oitem match {
         case Some(x) => {
           addToInventory(x)
-          println("You added the item to your inventory.")
+          out.println("You added the item to your inventory.")
         }
-        case None =>
+        case None => out.println("I don't see that item.")
       }
+    case PrintMessage(msg) =>
+      out.println(msg)
+
+    case m => out.println("unknown message in player: " + m)
+  }
+
+  def processCommand(command: String): Unit = {
+    val cmd = command.split(" ")
+    if (cmd(0).toLowerCase == "look") currentRoom ! Room.PrintDescription
+    if (cmd(0).toLowerCase == "inv") out.println("Inventory:" + inv.map(i => ("\n" + i.name + " - " + i.desc)).mkString)
+    if ((cmd(0).toLowerCase).contains("get")) {
+      currentRoom ! Room.GetItem(cmd(1))
+
     }
     if ((cmd(0).toLowerCase).contains("drop")) {
-       getFromInventory(cmd(1)) match {
+      getFromInventory(cmd(1)) match {
         case Some(x) => {
-          val di = Room.rooms(currentRoom).dropItem(x)
-          inv=inv.filterNot(_==x)
+          val di = currentRoom ! Room.DropItem(x)
+          inv = inv.filterNot(_ == x)
           di
         }
-        case None =>
+        case None => out.println("You do not have that item.")
       }
     }
-    if((cmd(0).toLowerCase) == "north"||cmd(0).toLowerCase == "south"||cmd(0).toLowerCase == "east"
-        ||cmd(0).toLowerCase == "west"||cmd(0).toLowerCase == "up"||cmd(0).toLowerCase == "down"){
+    if ((cmd(0).toLowerCase) == "north" || cmd(0).toLowerCase == "south" || cmd(0).toLowerCase == "east"
+      || cmd(0).toLowerCase == "west" || cmd(0).toLowerCase == "up" || cmd(0).toLowerCase == "down") {
       move(cmd(0).toLowerCase)
     }
-    
+
     if (command.toLowerCase == "exit") "exit"
-    if (command.toLowerCase == "help") println(
+    if (command.toLowerCase == "help") out.println(
       "look - reprints the description of the current room \n" +
         "inv - list the contents of your inventory \n" +
         "get item - to get an item from the room and add it to your inventory\n" +
@@ -42,7 +73,7 @@ class Player(private var currentRoom: String, private var inv: List[Item]) {
   }
 
   def getFromInventory(itemName: String): Option[Item] = {
-    println("it's lit")
+    out.println("it's lit")
     inv.find(_.name == itemName.toLowerCase)
   }
 
@@ -62,13 +93,14 @@ class Player(private var currentRoom: String, private var inv: List[Item]) {
       case "down" => 5
       case _ => -1
     }
-    Room.rooms(currentRoom).getExit(direct) match {
-      case Some(nextRoom) =>
-        currentRoom = nextRoom
-        println(Room.rooms(nextRoom).description)
-      case None => println("Error. Go away")
-    }
+    currentRoom ! Room.GetExit(direct)
   }
+}
 
+object Player {
+  case object ProcessInput
+  case class PrintMessage(msg: String)
+  case class TakeExit(newRoom: Option[ActorRef])
+  case class AddToInventory(item: Option[Item])
 }
 
