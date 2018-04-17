@@ -2,39 +2,39 @@
 
 <rooms>
 	<room name="The Galley" key="gal">
-		<description>This is the kitchen of the ship. It is located on the east side of the ship.</description>
-		<item name="rum">This barrel gives pirates life. Yasss</item>
-		<item name="knife">Use this item to cut something or someone</item>
-		<exits>,deck,,,attic,bm</exits>
+		<description>This is the kitchen of the ship. It is located on the east side. </description>
+		<item name="rum">Get wasted. Yasss</item>
+		<item name="knife">Use this item to cut a bitch.</item>
+		<exits>,deck,,,bridge,boil</exits>
 	</room>
 	<room name="The Deck" key="deck">
 		<description>Hang out with your pirate pals on the deck.</description>
-		<item name="chair">This is a place to sit.</item>
-		<item name="telescope">This can be used to spy on your other pirates.</item>
-		<exits>gal,,cq,,attic,bm</exits>
+		<item name="chair">It's missing a leg, just like Captain Buttocks.</item>
+		<item name="telescope">Use this to spy on Captain Buttocks. </item>
+		<exits>gal,,cq,,bridge,boil</exits>
 	</room>
 	<room name="Captain's quarters" key="cq">
-		<description> Hang out with your pirate pals on the deck.</description>
-		<item name="comb">This is a comb.</item>
-		<item name="can">This is a can of pepper spray.</item>
-		<exits> ,deck,,west,attic,basement</exits>
+		<description> This is where the captain sleeps.</description>
+		<item name="comb">Use this to comb to rip out your hair.</item>
+		<item name="can">It's a can of pepper spray - aim for the eyes.</item>
+		<exits> ,deck,,sickr,bridge,boil</exits>
 	</room>
-	<room name="west" key="west">
-		<description>WEST DESCRIPTION</description>
-		<item name="item1">description1</item>
-		<item name="items1">description1</item>
-		<exits> ,deck,cq,,attic,basement</exits>
+	<room name="Sick Room" key="sickr">
+		<description> This is where all the sick people die.</description>
+		<item name="bandage">Wrap it up. </item>
+		<item name="laudanum">It's very bitter. Take some if you want to forget your pain.</item>
+		<exits> ,deck,cq,,bridge,boil</exits>
 	</room>
-	<room name="attic" key="attic">
-		<description>ATTIC DESCRIPTION</description>
-		<item name="item1">description1</item>
-		<item name="items1">description1</item>
-		<exits>gal,deck,cq,west,,bm</exits>
+	<room name="Bridge" key="bridge">
+		<description>This is where the captain and officers work.</description>
+		<item name="rope">Tie some fancy knots with this.</item>
+		<item name="compass">Don't get lost.</item>
+		<exits>gal,deck,cq,sickr,,boil</exits>
 	</room>
-	<room name="basement" key="bm">
-		<description>BASEMENT DESCRIPTION</description>
-		<item name="item1">description1</item>
-		<item name="items1">description1</item>
-		<exits>gal,deck,cq,west,attic,</exits>
+	<room name="Boiler Room" key="boil">
+		<description>This is where water is boiled. It's hot and steamy.</description>
+		<item name="coal">Set things on fire.</item>
+		<item name="shovel">Find your worst enemy and knock them out.</item>
+		<exits>gal,deck,cq,sickr,bridge,</exits>
 	</room>
 </rooms>

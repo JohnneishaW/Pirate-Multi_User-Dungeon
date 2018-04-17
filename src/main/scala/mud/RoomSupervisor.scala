@@ -6,7 +6,7 @@ import akka.actor.ActorRef
 
 class RoomSupervisor extends Actor {
   import RoomSupervisor._
-
+  
   def receive = {
     case Location(player, currentRoom) => {
       player ! Player.TakeExit(rooms.get(currentRoom))
@@ -27,7 +27,6 @@ class RoomSupervisor extends Actor {
       val id = (n \ "@id").text
       val key = (n \ "@key").text
       (key, context.actorOf(Props(new Room(name, desc, exits, items)), key))
-      //new Room(name, desc, exits, items)
     }).toMap
   }
 }

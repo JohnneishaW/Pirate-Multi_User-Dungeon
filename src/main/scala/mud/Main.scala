@@ -12,7 +12,7 @@ import akka.actor.ActorSystem
 import akka.actor.Props
 
 object Main extends App {
-  println("Welcome to my MUD.")
+  
   /*
 		val startingInv:List[Item]=Nil
 	  val player = new Player("gal", startingInv)
@@ -37,10 +37,11 @@ object Main extends App {
     Future {
       val in = new BufferedReader(new InputStreamReader(sock.getInputStream))
       val out = new PrintStream(sock.getOutputStream)
-      out.println("You connected!")
+      out.println("You connected! Welcome to my MUD. \n")
       out.println("What is your name?")
       val name = in.readLine()
-      playerSuper ! PlayerSupervisor.NewPlayer("gal", startingInv, name, sock, in, out)
+      out.println("\n")
+      playerSuper ! PlayerSupervisor.NewPlayer("gal", startingInv, name,  sock, in, out)
     }
   }
 }

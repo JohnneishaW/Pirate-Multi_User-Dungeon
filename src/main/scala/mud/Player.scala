@@ -8,7 +8,7 @@ import akka.actor.ActorRef
 
 class Player(private var inv: List[Item], name: String, sock: Socket, in: BufferedReader, out: PrintStream) extends Actor {
   private var currentRoom: ActorRef = null
-
+  
   import Player._
   def receive = {
     case ProcessInput =>
@@ -19,9 +19,10 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
     case TakeExit(newRoom) =>
       newRoom match {
         case Some(nextRoom) =>
+          if(currentRoom != null) currentRoom ! Room.PExit(self)
           currentRoom = nextRoom
+          currentRoom ! Room.PEnter(self)
           currentRoom ! Room.PrintDescription
-
         case None => out.println("Error. Go away")
       }
 
@@ -45,7 +46,6 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
     if (cmd(0).toLowerCase == "inv") out.println("Inventory:" + inv.map(i => ("\n" + i.name + " - " + i.desc)).mkString)
     if ((cmd(0).toLowerCase).contains("get")) {
       currentRoom ! Room.GetItem(cmd(1))
-
     }
     if ((cmd(0).toLowerCase).contains("drop")) {
       getFromInventory(cmd(1)) match {
@@ -61,8 +61,19 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
       || cmd(0).toLowerCase == "west" || cmd(0).toLowerCase == "up" || cmd(0).toLowerCase == "down") {
       move(cmd(0).toLowerCase)
     }
-
-    if (command.toLowerCase == "exit") "exit"
+    if(cmd(0).toLowerCase == "say"){
+      val msg = command.split("say ").filter(_!="").mkString
+      currentRoom ! Room.SendMessage(s"$name said $msg")
+    }
+    if(cmd(0).toLowerCase == "tell"){
+      val msg = cmd.toList.drop(2).mkString("")
+      val target = cmd(1)
+      Main.playerSuper ! PlayerSupervisor.TellMessage(target, msg)
+    }
+    if (cmd(0).toLowerCase == "exit"){
+      currentRoom ! Room.PExit(self)
+      sock.close
+    }
     if (command.toLowerCase == "help") out.println(
       "look - reprints the description of the current room \n" +
         "inv - list the contents of your inventory \n" +
