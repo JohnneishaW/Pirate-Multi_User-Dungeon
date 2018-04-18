@@ -8,7 +8,10 @@ import akka.actor.ActorRef
 
 class Player(private var inv: List[Item], name: String, sock: Socket, in: BufferedReader, out: PrintStream) extends Actor {
   private var currentRoom: ActorRef = null
-  
+  private var health: Int = 10
+  private var currentWeapon: Option[Item] = None
+  private var currentVictim: Option[ActorRef] = None
+
   import Player._
   def receive = {
     case ProcessInput =>
@@ -19,7 +22,7 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
     case TakeExit(newRoom) =>
       newRoom match {
         case Some(nextRoom) =>
-          if(currentRoom != null) currentRoom ! Room.PExit(self)
+          if (currentRoom != null) currentRoom ! Room.PExit(self)
           currentRoom = nextRoom
           currentRoom ! Room.PEnter(self)
           currentRoom ! Room.PrintDescription
@@ -34,10 +37,44 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
         }
         case None => out.println("I don't see that item.")
       }
+    case CharacterInRoom(player) =>
+      player match {
+        case Some(x) =>
+          if (!currentWeapon.isEmpty) {
+            currentVictim = Some(x)
+            Main.actSuper ! ActivityManager.ScheduleEvent(currentWeapon.get.speed, DoAttack)
+            out.println("Player found.")
+          } else out.println("No weapon to attack the player with.")
+        case None =>
+          out.println("Player not found.")
+      }
+    case DoAttack =>
+      currentVictim match {
+        case Some(x) =>
+          x ! Attack(currentWeapon.get.damage, currentRoom)
+          // x ! AttackDone
+          out.println("Haha, I hit you.")
+        case None => out.println("No victims to attack.")
+      }
+
+    case Attack(damage, room) =>
+      if (room == currentRoom) {
+        val sameRoom = true
+        health -= damage
+        val alive = if (health > 0) true else false
+        out.println("You just took " + damage + " amount of damage.")
+        sender ! AttackDone(alive, sameRoom)
+      } else sender ! AttackDone(false, false)
+      
+    //goes back to attacker
+    case AttackDone(victimDead, sameRoom) =>
+      if(victimDead == true && sameRoom == true) out.println("You died.")
+      else if(victimDead==false && sameRoom ==false) out.println("Someone tried to attack you.")
+
     case PrintMessage(msg) =>
       out.println(msg)
 
-    case m => out.println("unknown message in player: " + m)
+    case m => println("unknown message in player: " + m)
   }
 
   def processCommand(command: String): Unit = {
@@ -61,17 +98,41 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
       || cmd(0).toLowerCase == "west" || cmd(0).toLowerCase == "up" || cmd(0).toLowerCase == "down") {
       move(cmd(0).toLowerCase)
     }
-    if(cmd(0).toLowerCase == "say"){
-      val msg = command.split("say ").filter(_!="").mkString
+    if (cmd(0).toLowerCase == "say") {
+      val msg = command.split("say ").filter(_ != "").mkString
       currentRoom ! Room.SendMessage(s"$name said $msg")
     }
-    if(cmd(0).toLowerCase == "tell"){
+    if (cmd(0).toLowerCase == "tell") {
       val msg = cmd.toList.drop(2).mkString("")
       val target = cmd(1)
       Main.playerSuper ! PlayerSupervisor.TellMessage(target, msg)
     }
-    if (cmd(0).toLowerCase == "exit"){
+    if (cmd(0).toLowerCase == "equip") {
+      if (currentWeapon.isEmpty) {
+        getFromInventory(cmd(1)) match {
+          case Some(x) => {
+            currentWeapon = Some(x)
+            inv = inv.filterNot(_ == x)
+            out.println(x.name + " is equipped.")
+          }
+          case None => out.println("You do not have that item.")
+        }
+      } else out.println("You already have a weapon - " + currentWeapon.map(_.name).mkString + ".")
+    }
+    if (command.toLowerCase == "unequip") {
+      if (!currentWeapon.isEmpty) {
+        addToInventory(currentWeapon.get)
+        currentWeapon = None
+      } else out.println("There is nothing to unequip.")
+    }
+    if (cmd(0).toLowerCase == "kill") {
+      if (currentVictim.isEmpty) currentRoom ! Room.GetCharacter(cmd(1))
+      else out.println("You're already attacking someone.")
+    }
+
+    if (cmd(0).toLowerCase == "exit") {
       currentRoom ! Room.PExit(self)
+      context.stop(self)
       sock.close
     }
     if (command.toLowerCase == "help") out.println(
@@ -80,11 +141,12 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
         "get item - to get an item from the room and add it to your inventory\n" +
         "drop item - to drop an item from your inventory into the room.\n" +
         "exit - leave the game\n" +
-        "help - print the available commands and what they do\n")
+        "help - print the available commands and what they do\n") +
+      "equip item - get the item that you want to use for attacking\n" +
+      "unequip - stop using current equipped item as attack weapon"
   }
 
   def getFromInventory(itemName: String): Option[Item] = {
-    out.println("it's lit")
     inv.find(_.name == itemName.toLowerCase)
   }
 
@@ -113,5 +175,9 @@ object Player {
   case class PrintMessage(msg: String)
   case class TakeExit(newRoom: Option[ActorRef])
   case class AddToInventory(item: Option[Item])
+  case class CharacterInRoom(player: Option[ActorRef])
+  case object DoAttack
+  case class Attack(damage: Int, room: ActorRef)
+  case class AttackDone(victimDead: Boolean, sameRoom: Boolean)
 }
 

@@ -26,11 +26,14 @@ object Main extends App {
   val system = ActorSystem("JMud")
   val playerSuper = system.actorOf(Props[PlayerSupervisor], "pSuper")
   val roomSuper = system.actorOf(Props[RoomSupervisor], "rSuper")
+  val actSuper =  system.actorOf(Props[ActivityManager], "aSuper")
+  val npcSuper = system.actorOf(Props[NPCSupervisor], "nSuper")
   val startingInv: List[Item] = Nil
 
   implicit val ec = system.dispatcher
   system.scheduler.schedule(0.seconds, 0.1.seconds, playerSuper, PlayerSupervisor.ProcessAllInput)
-
+  system.scheduler.schedule(0.seconds, 0.1.seconds, actSuper, ActivityManager.DoEvents)
+  
   val ss = new ServerSocket(4004)
   while (true) {
     val sock = ss.accept()

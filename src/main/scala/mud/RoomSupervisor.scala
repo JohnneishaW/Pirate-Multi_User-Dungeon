@@ -19,13 +19,12 @@ class RoomSupervisor extends Actor {
   def readRooms() = {
     val xmlData = xml.XML.loadFile("RoomData.xml")
     (xmlData \ "room").map(n => {
-      val name = (n \ "@name").text
-      val desc = (n \ "description").text
-      val exits = (n \ "exits").text.split(",").map(_.trim)
-      val items = (n \ "item").map(in =>
-        Item((in \ "@name").text, in.text)).toList
-      val id = (n \ "@id").text
+      val name = (n \ "@name").text  
       val key = (n \ "@key").text
+      val desc = (n \ "description").text
+      val exits = (n \ "exits").text.split(",").padTo(6, "").map(_.trim)
+      val items = (n \ "item").map(in => Item.apply(in)).toList
+       (n \ "npc").foreach(in => Main.npcSuper ! NPCSupervisor.NewNPC((in\"@name").text, key))
       (key, context.actorOf(Props(new Room(name, desc, exits, items)), key))
     }).toMap
   }

@@ -28,5 +28,4 @@ object PlayerSupervisor {
   case object ProcessAllInput
   case class TellMessage(target:String, msg: String)
   case class NewPlayer(currentRoom: String, inv: List[Item], name: String, sock: Socket, in: BufferedReader, out: PrintStream)
-  case class FindItem(item: String)
 }
