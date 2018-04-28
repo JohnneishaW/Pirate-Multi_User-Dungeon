@@ -6,7 +6,7 @@ import java.io.PrintStream
 import java.io.BufferedReader
 import java.net.Socket
 
-class Room(private val name: String, private val desc: String, val exitNames: Array[String], private var _items: List[Item]) extends Actor {
+class Room(private val name: String,private val key:String, private val desc: String, val exitNames: Array[String], private var _items: List[Item]) extends Actor {
   import Room._
 
   private var exits: Array[Option[ActorRef]] = null
@@ -16,6 +16,7 @@ class Room(private val name: String, private val desc: String, val exitNames: Ar
   def receive = {
     case LinkExits(rooms) =>
       exits = exitNames.map(rooms.get)
+      sender ! RoomSupervisor.GetExits(key,exitNames)
       println(name + " " + exits.length)
     case GetItem(itemName) =>
       sender ! Player.AddToInventory(getItem(itemName))

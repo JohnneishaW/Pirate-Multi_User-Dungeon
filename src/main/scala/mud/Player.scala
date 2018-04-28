@@ -14,6 +14,7 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
 
   import Player._
   def receive = {
+
     case ProcessInput =>
       if (in.ready()) {
         val input = in.readLine()
@@ -55,7 +56,7 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
       currentVictim match {
         case Some(x) =>
           x ! Attack(currentWeapon.get.damage, currentRoom)
-         out.println("You hit them - you bastard!")
+          out.println("You hit them - you bastard!")
         case None => out.println("No victims to attack.")
       }
 
@@ -79,15 +80,13 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
 
     //goes back to attacker
     case AttackDone(victimDead, sameRoom) =>
-      if (victimDead && sameRoom){
+      if (victimDead && sameRoom) {
         out.println("Your victim is dead.")
         currentVictim = None
-      }
-      else if (!victimDead && !sameRoom) {
+      } else if (!victimDead && !sameRoom) {
         out.println("They seem to be gone.")
         currentVictim = None
-      }
-      else {
+      } else {
         Main.actSuper ! ActivityManager.ScheduleEvent(currentWeapon.get.speed, DoAttack)
       }
 
@@ -100,6 +99,7 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
   def processCommand(command: String): Unit = {
     val cmd = command.split(" ")
     if (cmd(0).toLowerCase == "look") currentRoom ! Room.PrintDescription
+    //items
     if (cmd(0).toLowerCase == "inv") out.println("Inventory:" + inv.map(i => ("\n" + i.name + " - " + i.desc)).mkString)
     if ((cmd(0).toLowerCase).contains("get")) {
       currentRoom ! Room.GetItem(cmd(1))
@@ -113,21 +113,6 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
         }
         case None => out.println("You do not have that item.")
       }
-    }
-    if ((cmd(0).toLowerCase) == "north" || cmd(0).toLowerCase == "south" || cmd(0).toLowerCase == "east"
-      || cmd(0).toLowerCase == "west" || cmd(0).toLowerCase == "up" || cmd(0).toLowerCase == "down") {
-      if(currentVictim.isEmpty) move(cmd(0).toLowerCase)
-      else out.println("You are in combat. You cannot move.")
-    }
-    
-    if (cmd(0).toLowerCase == "say") {
-      val msg = command.split("say ").filter(_ != "").mkString
-      currentRoom ! Room.SendMessage(s"$name said $msg")
-    }
-    if (cmd(0).toLowerCase == "tell") {
-      val msg = cmd.toList.drop(2).mkString("")
-      val target = cmd(1)
-      Main.playerSuper ! PlayerSupervisor.TellMessage(target, msg)
     }
     if (cmd(0).toLowerCase == "equip") {
       if (currentWeapon.isEmpty) {
@@ -147,13 +132,14 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
         currentWeapon = None
       } else out.println("There is nothing to unequip.")
     }
-    if (cmd(0).toLowerCase == "kill") {
-      if (currentVictim.isEmpty) currentRoom ! Room.GetCharacter(cmd(1))
-      else out.println("You're already attacking someone.")
+    //movement
+    if ((cmd(0).toLowerCase) == "north" || cmd(0).toLowerCase == "south" || cmd(0).toLowerCase == "east"
+      || cmd(0).toLowerCase == "west" || cmd(0).toLowerCase == "up" || cmd(0).toLowerCase == "down") {
+      if (currentVictim.isEmpty) move(cmd(0).toLowerCase)
+      else out.println("You are in combat. You cannot move.")
     }
-    
-    if(cmd(0).toLowerCase == "flee"){
-      if(currentVictim.isEmpty) out.println("You cannot flee.")
+    if (cmd(0).toLowerCase == "flee") {
+      if (currentVictim.isEmpty) out.println("You cannot flee.")
       else currentRoom ! Room.GetExit(util.Random.nextInt(6))
     }
     if (cmd(0).toLowerCase == "exit") {
@@ -161,16 +147,38 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
       context.stop(self)
       sock.close
     }
+    if(cmd(0).toLowerCase == "shortestpath") Main.roomSuper ! RoomSupervisor.ShortPath(self, currentRoom.path.name, cmd(1).toLowerCase) 
+    
+    //communication between players
+    if (cmd(0).toLowerCase == "say") {
+      val msg = command.split("say ").filter(_ != "").mkString
+      currentRoom ! Room.SendMessage(s"$name said $msg")
+    }
+    if (cmd(0).toLowerCase == "tell") {
+      val msg = cmd.toList.drop(2).mkString("")
+      val target = cmd(1)
+      Main.playerSuper ! PlayerSupervisor.TellMessage(target, msg)
+    }
+
+    if (cmd(0).toLowerCase == "kill") {
+      if (currentVictim.isEmpty) currentRoom ! Room.GetCharacter(cmd(1))
+      else out.println("You're already attacking someone.")
+    }
+
     if (command.toLowerCase == "help") out.println(
       "look - reprints the description of the current room \n" +
         "inv - list the contents of your inventory \n" +
         "get item - to get an item from the room and add it to your inventory\n" +
         "drop item - to drop an item from your inventory into the room.\n" +
         "exit - leave the game\n" +
-        "help - print the available commands and what they do\n") +
-      "equip item - get the item that you want to use for attacking\n" +
-      "unequip - stop using current equipped item as attack weapon"
+        "help - print the available commands and what they do\n" +
+        "equip item - get the item that you want to use for attacking\n" +
+        "unequip - stop using current equipped item as attack weapon \n" +
+        "kill name - initiates combat with another player in the game" +
+        "shortestPath roomkey - lists directions of the shortest path to the requested room")
   }
+  
+  
 
   def getFromInventory(itemName: String): Option[Item] = {
     inv.find(_.name == itemName.toLowerCase)
