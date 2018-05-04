@@ -34,7 +34,7 @@ class RoomSupervisor extends Actor {
       val exits = (n \ "exits").text.split(",").padTo(6, "").map(_.trim)
       val items = (n \ "item").map(in => Item.apply(in)).toList
       (n \ "npc").foreach(in => Main.npcSuper ! NPCSupervisor.NewNPC((in \ "@name").text, key))
-      rooms += (key -> context.actorOf(Props(new Room(name, key, desc, exits, items)), key))
+      rooms += (key -> context.actorOf(Props(new Room(name, key, desc, exits, MutableDLL(items:_*))), key))
     })
   }
   

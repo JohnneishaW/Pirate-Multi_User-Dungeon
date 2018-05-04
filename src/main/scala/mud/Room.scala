@@ -6,13 +6,12 @@ import java.io.PrintStream
 import java.io.BufferedReader
 import java.net.Socket
 
-class Room(private val name: String,private val key:String, private val desc: String, val exitNames: Array[String], private var _items: List[Item]) extends Actor {
+class Room(private val name: String,private val key:String, private val desc: String, val exitNames: Array[String], private var _items: MutableDLL[Item]) extends Actor {
   import Room._
 
   private var exits: Array[Option[ActorRef]] = null
   private var allplayers = List[ActorRef]()
 
-  def items = _items
   def receive = {
     case LinkExits(rooms) =>
       exits = exitNames.map(rooms.get)
@@ -40,7 +39,7 @@ class Room(private val name: String,private val key:String, private val desc: St
 
   def description(): String = {
     val exitN = exitNames.toList.zip(List("north", "south", "east", "west", "up", "down"))
-    name + "\n" + desc + "\n" + "Items: " + items.map(_.name).mkString(", ") + "\n" + "Exits: " + exitN.filter(_._1 != ("")).map(_._2).mkString(", ") + "\nPlayers: " + allplayers.map(_.path.name).mkString(", ")
+    name + "\n" + desc + "\n" + "Items: " + _items.map(_.name).mkString(", ") + "\n" + "Exits: " + exitN.filter(_._1 != ("")).map(_._2).mkString(", ") + "\nPlayers: " + allplayers.map(_.path.name).mkString(", ")
   }
 
   def getExit(dir: Int): Option[ActorRef] = {
@@ -48,7 +47,7 @@ class Room(private val name: String,private val key:String, private val desc: St
   }
 
   def getItem(itemName: String): Option[Item] = {
-    val itemFound = items.find(_.name == itemName.toLowerCase)
+    val itemFound = _items.find(_.name == itemName.toLowerCase)
     _items = _items.filterNot(_.name == itemName.toLowerCase)
     itemFound
   }
@@ -59,7 +58,7 @@ class Room(private val name: String,private val key:String, private val desc: St
     playerFound
   }
   def dropItem(item: Item): Unit = {
-    _items = item :: _items
+    _items += item 
   }
 
 }
