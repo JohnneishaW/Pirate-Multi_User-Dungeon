@@ -12,6 +12,10 @@ class NPC(name: String) extends Actor {
   import NPC._
   import Player._
 
+ /* This game is structures so the NPC cannot not initiate or react in combat because it does not have a weapon.
+  * NPCs are just mindless people roaming the ship.
+  * */
+  
   def receive = {
     case TakeExit(newRoom) =>
       newRoom match {

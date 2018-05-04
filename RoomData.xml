@@ -21,9 +21,10 @@
 		<exits> ,deck,,sickr,bridge,boil</exits>
 	</room>
 	<room name="Sick Room" key="sickr">
-		<description> This is where all the sick people die.</description>
+		<description>This is where all the sick people die.</description>
 		<item name="bandage" damage="0" speed="20">Wrap it up. </item>
 		<item name="laudanum" damage="20" speed="20">It's very bitter. Take some if you want to forget your pain.</item>
+		<npc name = "Pandora"/>
 		<exits> ,deck,cq,,bridge,boil</exits>
 	</room>
 	<room name="Bridge" key="bridge">
@@ -37,5 +38,6 @@
 		<item name="coal" damage="70" speed="20">Set things on fire.</item>
 		<item name="shovel" damage="55" speed="20">Find your worst enemy and knock them out.</item>
 		<exits>gal,deck,cq,sickr,bridge,</exits>
+		<npc name = "Benton" /> 
 	</room>
 </rooms>

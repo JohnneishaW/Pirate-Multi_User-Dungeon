@@ -25,11 +25,11 @@ class Room(private val name: String,private val key:String, private val desc: St
     case GetExit(direct) =>
       sender ! Player.TakeExit(getExit(direct))
     case PEnter(player) =>
-      allplayers.foreach(p => p ! Player.PrintMessage(player.path.name + " entered the room.\n"))
+      allplayers.foreach(p => p ! Player.PrintMessage("\n" + player.path.name + " entered the room."))
       allplayers ::= player
     case PExit(player) =>
       allplayers = allplayers.filter(_ != player)
-      allplayers.foreach(p => p ! Player.PrintMessage(player.path.name + " left the room.\n"))
+      allplayers.foreach(p => p ! Player.PrintMessage("\n" + player.path.name + " left the room."))
     case GetCharacter(playerName) =>
       sender ! Player.CharacterInRoom(getPlayer(playerName))
     case SendMessage(msg: String) =>
@@ -39,7 +39,7 @@ class Room(private val name: String,private val key:String, private val desc: St
 
   def description(): String = {
     val exitN = exitNames.toList.zip(List("north", "south", "east", "west", "up", "down"))
-    name + "\n" + desc + "\n" + "Items: " + _items.map(_.name).mkString(", ") + "\n" + "Exits: " + exitN.filter(_._1 != ("")).map(_._2).mkString(", ") + "\nPlayers: " + allplayers.map(_.path.name).mkString(", ")
+    name + "\n" + desc + "\n" + "Items: " + _items.map(_.name).mkString(", ") + "\n" + "Exits: " + exitN.filter(_._1 != ("")).map(_._2).mkString(", ") + "\nPlayers: " + allplayers.map(_.path.name).mkString(", ") + "\n"
   }
 
   def getExit(dir: Int): Option[ActorRef] = {

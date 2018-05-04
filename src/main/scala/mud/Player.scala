@@ -11,6 +11,7 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
   private var health: Int = 100
   private var currentWeapon: Option[Item] = None
   private var currentVictim: Option[ActorRef] = None
+  def pName = name
 
   import Player._
   def receive = {
@@ -34,9 +35,9 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
       oitem match {
         case Some(x) => {
           addToInventory(x)
-          out.println("You added the item to your inventory.")
+          out.println("You added the item to your inventory.\n")
         }
-        case None => out.println("I don't see that item.")
+        case None => out.println("I don't see that item.\n")
       }
 
     //Attack
@@ -45,11 +46,11 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
         case Some(x) =>
           if (x == self) out.println("You cannot kill yourself.")
           else if (!currentWeapon.isEmpty && x != self) {
-       //   else{
+            //   else{
             currentVictim = Some(x)
             Main.actSuper ! ActivityManager.ScheduleEvent(currentWeapon.get.speed, DoAttack)
             out.println("Player found.")
-          //}
+            //}
           } else out.println("No weapon to attack the player with.")
         case None =>
           out.println("Player not found.")
@@ -117,6 +118,10 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
         case None => out.println("You do not have that item.")
       }
     }
+
+    /* Every time a player equip a weapon, other players are warned. This warning is helpful because if the player with a weapon decides to 
+  * initate combat, the attacked player must have a weapon equipped in order to attack back.
+  */
     if (cmd(0).toLowerCase == "equip") {
       if (currentWeapon.isEmpty) {
         getFromInventory(cmd(1)) match {
@@ -124,14 +129,16 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
             currentWeapon = Some(x)
             inv = inv.filterNot(_ == x)
             out.println(x.name + " is equipped.")
+            currentRoom ! Room.SendMessage("\nWatch out! " + pName + " is equipped with a " + x.name)
           }
-          case None => out.println("You do not have that item.")
+          case None => out.println("You do not have that item.\n")
         }
       } else out.println("You already have a weapon - " + currentWeapon.map(_.name).mkString + ".")
     }
     if (command.toLowerCase == "unequip") {
       if (!currentWeapon.isEmpty) {
         addToInventory(currentWeapon.get)
+        out.println(currentWeapon.get.name + " is unequipped.\n")
         currentWeapon = None
       } else out.println("There is nothing to unequip.")
     }
@@ -150,15 +157,16 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
       context.stop(self)
       sock.close
     }
-    if(cmd(0).toLowerCase == "shortestpath") Main.roomSuper ! RoomSupervisor.ShortPath(self, currentRoom.path.name, cmd(1).toLowerCase) 
-    
-    //communication between players
+    if (cmd(0).toLowerCase == "shortestpath") Main.roomSuper ! RoomSupervisor.ShortPath(self, currentRoom.path.name, cmd(1).toLowerCase)
+
+//communication between players
     if (cmd(0).toLowerCase == "say") {
       val msg = command.split("say ").filter(_ != "").mkString
       currentRoom ! Room.SendMessage(s"$name said $msg")
     }
     if (cmd(0).toLowerCase == "tell") {
-      val msg = cmd.toList.drop(2).mkString("")
+     // val msg = cmd.toList.drop(2).mkString("")
+      val msg = command.split("tell ").filter(_ != "").mkString
       val target = cmd(1)
       Main.playerSuper ! PlayerSupervisor.TellMessage(target, msg)
     }
@@ -167,7 +175,7 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
       if (currentVictim.isEmpty) currentRoom ! Room.GetCharacter(cmd(1))
       else out.println("You're already attacking someone.")
     }
-    if(command.toLowerCase == "health"){
+    if (command.toLowerCase == "health") {
       out.println("Health: " + health)
     }
 
@@ -184,8 +192,6 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
         "kill name - initiates combat with another player in the game" +
         "shortestPath roomkey - lists directions of the shortest path to the requested room")
   }
-  
-  
 
   def getFromInventory(itemName: String): Option[Item] = {
     inv.find(_.name == itemName.toLowerCase)
