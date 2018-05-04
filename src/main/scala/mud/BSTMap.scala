@@ -1,84 +1,122 @@
 package mud
 
 import collection.mutable
-
+import scala.annotation.tailrec
 
 class BSTMap[K, V](comp: (K, K) => Int) extends collection.mutable.Map[K, V] {
-  import BSTMap._
-  private var root: Node[K, V] = null
-
-  def get(key: K): Option[V] = {
-    var rover = root
-    while(rover != null && comp(key, rover.kv._1) != 0) {
-      if(comp(key, rover.kv._1) < 0) {
-        rover = rover.left
-      } else {
-        rover = rover.right
-      }
-    }
-    if(rover==null) None else Some(rover.kv._2)
+  import BSTMap._ 
+  
+  private class Node(var key: K, var data: V) {
+    var left: Node = null
+    var right: Node = null
   }
 
-  def iterator: Iterator[(K, V)] = ???
+  private var root: Node = null
 
   def +=(kv: (K, V)) = {
-    def adder(n: Node[K, V]): Node[K, V] = {
-      if (n == null) {
-        new Node(kv, null, null)
+    if (root == null) {
+      root = new Node(kv._1, kv._2)
+    } else {
+      var rover = root
+      var parent: Node = null
+      var c = comp(kv._1, rover.key)
+      while (c != 0 && rover != null) {
+        parent = rover
+        rover = if (c < 0) rover.left else rover.right
+        if (rover != null) c = comp(kv._1, rover.key)
+      }
+      if (c == 0) {
+        rover.key = kv._1
+        rover.data = kv._2
+      } else if (c < 0) {
+        parent.left = new Node(kv._1, kv._2)
       } else {
-        val c = comp(kv._1, n.kv._1)
-        if (c < 0) {
-          n.left = adder(n.left)
-        } else if (c > 0) {
-          n.right = adder(n.right)
-        } else {
-          n.kv = kv
-        }
-        n
+        parent.right = new Node(kv._1, kv._2)
       }
     }
-    root = adder(root)
     this
   }
 
   def -=(key: K) = {
+    def findVictim(n: Node): Node = {
+      if (n == null) null
+      else {
+        val c = comp(key, n.key)
+        if (c == 0) {
+          if (n.left == null) n.right
+          else if (n.right == null) n.left
+          else {
+            val (key, data, node) = deleteMaxChild(n.left)
+            n.left = node
+            n.key = key
+            n.data = data
+            n
+          }
+        } else if (c < 0) {
+          n.left = findVictim(n.left)
+          n
+        } else {
+          n.right = findVictim(n.right)
+          n
+        }
+      }
+    }
+
+    def deleteMaxChild(n: Node): (K, V, Node) = {
+      if (n.right == null) {
+        (n.key, n.data, n.left)
+      } else {
+        val (key, data, node) = deleteMaxChild(n.right)
+        n.right = node
+        (key, data, n)
+      }
+    }
+
+    root = findVictim(root)
     this
   }
 
-  def preorder(visit: ((K, V)) => Unit): Unit = {
-    def helper(n: Node[K, V]): Unit = {
-      if (n != null) {
-        visit(n.kv)
-        helper(n.left)
-        helper(n.right)
-      }
+  def get(key: K): Option[V] = {
+    var rover = root
+    var c = comp(key, rover.key)
+    while (rover != null && c != 0) {
+      rover = if (c < 0) rover.left else rover.right
+      if (rover != null) c = comp(key, rover.key)
     }
-    helper(root)
+    if (rover == null) None else Some(rover.data)
   }
 
-  def postorder(visit: ((K, V)) => Unit): Unit = {
-    def helper(n: Node[K, V]): Unit = {
+  def iterator = new Iterator[(K, V)] {
+    val stack = new ListStack[Node]
+    pushRunLeft(root)
+    def hasNext: Boolean = !stack.isEmpty
+    def next: (K, V) = {
+      val n = stack.pop()
+      pushRunLeft(n.right)
+      n.key -> n.data
+    }
+    @tailrec def pushRunLeft(n: Node) {
       if (n != null) {
-        helper(n.left)
-        helper(n.right)
-        visit(n.kv)
+        stack.push(n)
+        pushRunLeft(n.left)
       }
     }
-    helper(root)
-  }
-
-  def inorder(visit: ((K, V)) => Unit): Unit = {
-    def helper(n: Node[K, V]): Unit = {
-      if (n != null) {
-        helper(n.left)
-        visit(n.kv)
-        helper(n.right)
-      }
-    }
-    helper(root)
   }
 }
 
-object BSTMap extends App {
-  private class Node[K, V](var kv: (K, V), var left: Node[K, V], var right: Node[K, V])
+object BSTMap {
+  def apply[K, V](data: (K, V)*)(comp: (K, K) => Int): BSTMap[K, V] = {
+    val tm = new BSTMap[K, V](comp)
+    val d = data.sortWith((a, b) => comp(a._1, b._1) < 0).toIndexedSeq
+    def binaryAdd(start: Int, end: Int) {
+      if (start < end) {
+        val mid = (start + end) / 2
+        tm += d(mid)
+        binaryAdd(start, mid)
+        binaryAdd(mid + 1, end)
+      }
+    }
+    binaryAdd(0, data.length)
+    tm
+  }
 }

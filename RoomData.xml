@@ -15,7 +15,7 @@
 		<exits>gal,,cq,,bridge,boil</exits>
 	</room>
 	<room name="Captain's quarters" key="cq">
-		<description> This is where the captain sleeps.</description>
+		<description>This is where the captain sleeps.</description>
 		<item name="comb" damage="5" speed="20">Use this to comb to rip out your hair.</item>
 		<item name="can" damage="70" speed="20">It's a can of pepper spray - aim for the eyes.</item>
 		<exits> ,deck,,sickr,bridge,boil</exits>
