@@ -22,19 +22,20 @@ class RoomSupervisor extends Actor {
     case m => println("unknown message in roomSupervisor: " + m)
   }
 
-  val rooms = readRooms()
+  val rooms = new BSTMap[String, ActorRef](_.compareTo(_))
+  readRooms()
   context.children.foreach(_ ! Room.LinkExits(rooms))
   def readRooms() = {
     val xmlData = xml.XML.loadFile("RoomData.xml")
-    (xmlData \ "room").map(n => {
+    (xmlData \ "room").foreach(n => {
       val name = (n \ "@name").text
       val key = (n \ "@key").text
       val desc = (n \ "description").text
       val exits = (n \ "exits").text.split(",").padTo(6, "").map(_.trim)
       val items = (n \ "item").map(in => Item.apply(in)).toList
       (n \ "npc").foreach(in => Main.npcSuper ! NPCSupervisor.NewNPC((in \ "@name").text, key))
-      (key, context.actorOf(Props(new Room(name, key, desc, exits, items)), key))
-    }).toMap
+      rooms += (key -> context.actorOf(Props(new Room(name, key, desc, exits, items)), key))
+    })
   }
   
   private val directions = Array[String]("north", "south", "east", "west", "up", "down")

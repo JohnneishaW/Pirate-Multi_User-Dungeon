@@ -45,9 +45,11 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
         case Some(x) =>
           if (x == self) out.println("You cannot kill yourself.")
           else if (!currentWeapon.isEmpty && x != self) {
+       //   else{
             currentVictim = Some(x)
             Main.actSuper ! ActivityManager.ScheduleEvent(currentWeapon.get.speed, DoAttack)
             out.println("Player found.")
+          //}
           } else out.println("No weapon to attack the player with.")
         case None =>
           out.println("Player not found.")
@@ -75,6 +77,7 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
           true
         } else false
         out.println("You just took " + damage + " amount of damage.")
+        out.println("Health: " + health)
         sender ! AttackDone(dead, sameRoom)
       } else sender ! AttackDone(false, false)
 
@@ -164,6 +167,9 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
       if (currentVictim.isEmpty) currentRoom ! Room.GetCharacter(cmd(1))
       else out.println("You're already attacking someone.")
     }
+    if(command.toLowerCase == "health"){
+      out.println("Health: " + health)
+    }
 
     if (command.toLowerCase == "help") out.println(
       "look - reprints the description of the current room \n" +
@@ -174,6 +180,7 @@ class Player(private var inv: List[Item], name: String, sock: Socket, in: Buffer
         "help - print the available commands and what they do\n" +
         "equip item - get the item that you want to use for attacking\n" +
         "unequip - stop using current equipped item as attack weapon \n" +
+        "health - displays current health" +
         "kill name - initiates combat with another player in the game" +
         "shortestPath roomkey - lists directions of the shortest path to the requested room")
   }

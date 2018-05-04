@@ -7,15 +7,19 @@ import akka.actor.ActorRef
 class ActivityManager extends Actor{
   import ActivityManager._
   
-  private val pq = new PriorityQueue[Event]((e1,e2) => e1.time<e2.time)
+  //private val pq = new PriorityQueue[Event]((e1,e2) => e1.time<e2.time)
+  private val bh = new BinaryHeap[Event]((e1,e2) => e1.time<e2.time)
   private var currentTime = 0
   def receive = {
     case ScheduleEvent(delta:Int, message:Any) =>
-      pq.enqueue(Event(currentTime+delta, sender, message))
+      // pq.enqueue(Event(currentTime+delta, sender, message))
+      bh.enqueue(Event(currentTime+delta, sender, message))
     case DoEvents =>
       currentTime += 1
-      while(!pq.isEmpty && pq.peek.time <= currentTime){
-        val dEvent = pq.dequeue()
+      // while(!pq.isEmpty && pq.peek.time <= currentTime){
+      while(!bh.isEmpty && bh.peek.time <= currentTime){
+        // val dEvent = pq.dequeue()
+        val dEvent = bh.dequeue()
         dEvent.sender ! dEvent.message
       }
   }

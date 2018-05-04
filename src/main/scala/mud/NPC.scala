@@ -6,7 +6,7 @@ import akka.actor.ActorRef
 class NPC(name: String) extends Actor {
   private var currentRoom: ActorRef = null
   private var health: Int = 100
-  private var currentWeapon: Option[Item] = Some(Item("", 30, 20, ""))
+  private var currentWeapon: Option[Item] = Some(Item(" ", 30, 20, ""))
   private var currentVictim: Option[ActorRef] = None
 
   import NPC._
@@ -21,7 +21,7 @@ class NPC(name: String) extends Actor {
           currentRoom ! Room.PEnter(self)
         case None => println("Error in room movement for NPC")
       }
-      Main.actSuper ! ActivityManager.ScheduleEvent(100, Walk)
+      Main.actSuper ! ActivityManager.ScheduleEvent(200, Walk)
 
     //NPC moves randomly among rooms
     case Walk =>
@@ -35,7 +35,7 @@ class NPC(name: String) extends Actor {
     case DoAttack =>
       currentVictim match {
         case Some(x) =>
-          x ! Attack(currentWeapon.get.damage, currentRoom)
+              x ! Attack(currentWeapon.get.damage, currentRoom)
         case None =>
       }
     //attacking

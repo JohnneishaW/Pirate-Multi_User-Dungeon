@@ -73,6 +73,6 @@ object Room {
   case class GetExit(direct: Int)
   case class PEnter(player: ActorRef)
   case class PExit(player: ActorRef)
-  case class LinkExits(rooms: Map[String, ActorRef])
+  case class LinkExits(rooms: BSTMap[String, ActorRef])
   case class GetCharacter(playerName: String)
 }
