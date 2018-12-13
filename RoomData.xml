@@ -3,7 +3,7 @@
 <rooms>
 	<room name="The Galley" key="gal">
 		<description>This is the kitchen of the ship. It is located on the east side. </description>
-		<item name="chair" damage="10" speed="20">SRest for a while.</item>
+		<item name="chair" damage="10" speed="20">Rest for a while.</item>
 		<item name="knife" damage="50" speed="20">Use this item to cut some strawberries.</item>
 		<npc name="Scrappy"/>
 		<exits>,deck,,,bridge,boil</exits>
